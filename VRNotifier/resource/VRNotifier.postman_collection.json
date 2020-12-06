@@ -1,0 +1,39 @@
+{
+	"info": {
+		"_postman_id": "b27f98f1-ac21-4363-ac28-332191d4374a",
+		"name": "VRNotifier",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Notify",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"message\": \"Chapter 2 is here! Check it out at: https://w3.sololeveling.net/manga/solo-leveling-chapter-2/\",\r\n    \"notificationEndpointIdentifiers\": [\r\n        \"445529407323373568\"\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:5010/api/notification",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "5010",
+					"path": [
+						"api",
+						"notification"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
