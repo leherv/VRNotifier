@@ -48,12 +48,12 @@ namespace VRNotifier.Commands
         public async Task ListSubscribed()
         {
             var result = await _vrPersistenceClient.GetSubscribedToMedia(GetNotificationEndpointNotifierIdentifier(Context));
-            var message = "";
+            string message;
             if (result.IsSuccess)
             {
                 message = result.Value == null || !result.Value.Any() 
                     ? "No Subscriptions yet."
-                    : $"Subscribed To: \n {string.Join("\n", result.Value .Select(m => m.MediaName))}";
+                    : $"Subscribed To:\n{string.Join("\n", result.Value .Select(m => m.MediaName))}";
             }
             else
             {

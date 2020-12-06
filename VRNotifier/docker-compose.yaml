@@ -10,3 +10,9 @@ services:
       VRScraper_ApiPort: "${VRNotifier_ApiPort}"
       VRNotifier_NotificationSettings__DiscordSettings__ApiKey: "${VRNotifier_NotificationSettings__DiscordSettings__ApiKey}"
       VRNotifier_VRPersistenceClientSettings__Endpoint: "${VRNotifier_VRPersistenceClientSettings__Endpoint}"
+    networks:
+      - vr
+
+networks:
+  vr:
+    name: custom_vr

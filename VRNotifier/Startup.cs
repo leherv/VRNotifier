@@ -28,7 +28,6 @@ namespace VRNotifier
             
             services.Configure<TrackedMediaSettings>(Configuration.GetSection(nameof(TrackedMediaSettings)));
             services.Configure<DiscordSettings>(Configuration.GetSection($"NotificationSettings:{nameof(DiscordSettings)}"));
-            services.Configure<DiscordSettings>(Configuration.GetSection(nameof(VRPersistenceClientSettings)));
             
             services.AddSingleton<DiscordSocketClient>();
             services.AddSingleton<CommandService>();
