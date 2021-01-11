@@ -29,6 +29,6 @@ stages:
     - task: AzureWebAppContainer@1
       inputs:
         azureSubscription: 'Azure for Students(0238d96c-7a79-484f-a2af-2a1bab330d0f)'
-        appName: 'vrscraper'
-        containers: 'leherv/vrscraper'
+        appName: 'vrnotifier'
+        containers: 'leherv/vrnotifier'
         multicontainerConfigFile: '**/docker-compose.yaml'
