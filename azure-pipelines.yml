@@ -26,9 +26,13 @@ stages:
           VRNotifier_NotificationSettings__DiscordSettings__ApiKey=$(VRNotifier_NotificationSettings__DiscordSettings__ApiKey)
           VRNotifier_VRPersistenceClientSettings__Endpoint=http://vrpersistence_api:5000/api/
         action: 'Build services'
-    - task: AzureWebAppContainer@1
+    - task: DockerCompose@0
       inputs:
-        azureSubscription: 'Azure for Students(3)(0238d96c-7a79-484f-a2af-2a1bab330d0f)'
-        appName: 'vrnotifier'
-        containers: 'leherv/vrnotifier'
-        multicontainerConfigFile: '**/docker-compose.yaml'
+        containerregistrytype: 'Container Registry'
+        dockerRegistryEndpoint: 'DockerHub'
+        dockerComposeFile: '**/docker-compose.yaml'
+        dockerComposeFileArgs: |
+          VRNotifier_ApiPort=5010
+          VRNotifier_NotificationSettings__DiscordSettings__ApiKey=$(VRNotifier_NotificationSettings__DiscordSettings__ApiKey)
+          VRNotifier_VRPersistenceClientSettings__Endpoint=http://vrpersistence_api:5000/api/
+        action: 'Push services'
