@@ -13,9 +13,9 @@
       "commandName": "Project",
       "applicationUrl": "https://localhost:5011;http://localhost:5010",
       "environmentVariables": {
-        "VRNotifier_ApiPort": "5010",
-        "VRNotifier_NotificationSettings__DiscordSettings__ApiKey": "add you key here",
-        "VRNotifier_VRPersistenceClientSettings__Endpoint": "http://localhost:5000/api/"
+        "VRNOTIFIER_APIPORT": "5010",
+        "VRNOTIFIER_NOTIFICATIONSETTINGS__DISCORDSETTINGS__APIKEY": "add you key here",
+        "VRNOTIFIER_VRPERSISTENCECLIENTSETTINGS__ENDPOINT": "http://localhost:5000/api/"
       }
     }
   }

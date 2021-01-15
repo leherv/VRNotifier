@@ -5,11 +5,11 @@ services:
     container_name: vrnotifier_api
     build: .
     ports:
-      - ${VRNotifier_ApiPort}:5000
+      - ${VRNOTIFIER_APIPORT}:5000
     environment:
-      VRScraper_ApiPort: "${VRNotifier_ApiPort}"
-      VRNotifier_NotificationSettings__DiscordSettings__ApiKey: "${VRNotifier_NotificationSettings__DiscordSettings__ApiKey}"
-      VRNotifier_VRPersistenceClientSettings__Endpoint: "${VRNotifier_VRPersistenceClientSettings__Endpoint}"
+      VRNOTIFIER_APIPORT: "${VRNOTIFIER_APIPORT}"
+      VRNOTIFIER_NOTIFICATIONSETTINGS__DISCORDSETTINGS__APIKEY: "${VRNOTIFIER_NOTIFICATIONSETTINGS__DISCORDSETTINGS__APIKEY}"
+      VRNOTIFIER_VRPERSISTENCECLIENTSETTINGS__ENDPOINT: "${VRNOTIFIER_VRPERSISTENCECLIENTSETTINGS__ENDPOINT}"
     networks:
       - vr
 
