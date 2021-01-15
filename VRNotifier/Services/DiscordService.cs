@@ -32,9 +32,11 @@ namespace VRNotifier.Services
         
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("Connecting to Discord");
             await _client.LoginAsync(TokenType.Bot, _discordSettings.ApiKey);
             await _client.StartAsync();
             await _commandHandlingService.InitializeAsync();
+            _logger.LogInformation("Connection successful.");
         }
 
         public async Task<Result> Notify(NotificationDTO notificationDto)
