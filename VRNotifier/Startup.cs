@@ -48,7 +48,7 @@ namespace VRNotifier
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddFile("Logs/vrnotifier-{Date}.txt");
+            loggerFactory.AddFile("bin/Debug/netcoreapp3.1/vrnotifier-{Date}.txt");
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

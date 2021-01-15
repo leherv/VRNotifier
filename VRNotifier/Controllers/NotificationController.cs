@@ -16,9 +16,10 @@ namespace VRNotifier.Controllers
         private readonly DiscordService _discordService;
         private readonly ILogger<NotificationController> _logger;
 
-        public NotificationController(DiscordService discordService)
+        public NotificationController(DiscordService discordService, ILogger<NotificationController> logger)
         {
             _discordService = discordService;
+            _logger = logger;
         }
         
         [HttpPost]
