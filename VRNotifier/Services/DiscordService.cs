@@ -20,7 +20,7 @@ namespace VRNotifier.Services
         private readonly DiscordSettings _discordSettings;
         private readonly CommandHandlingService _commandHandlingService;
         private readonly ILogger<DiscordService> _logger;
-        private const string NOTIFICATION_CHANNEL_NAME = "notifications";
+        private const string NOTIFICATION_CATEGORY_CHANNEL = "Notifications"; 
 
         public DiscordService(CommandHandlingService commandHandlingService, DiscordSocketClient client, IOptions<DiscordSettings> discordSettings, IServiceProvider serviceProvider, ILogger<DiscordService> logger)
         {
@@ -43,7 +43,7 @@ namespace VRNotifier.Services
         {
             try
             {
-                var notifiableChannelInformation = FilterNotifiableEndpointInformation(notificationDto);
+                var notifiableChannelInformation = await FilterNotifiableEndpointInformation(notificationDto);
                 var notifyChannelTasks = notifiableChannelInformation.Select(notifiableChannelInfo =>
                     NotifyChannel(notifiableChannelInfo, notificationDto.Message));
                 var executionResult = await Task.WhenAll(notifyChannelTasks);
@@ -56,7 +56,7 @@ namespace VRNotifier.Services
             }
         }
 
-        private async Task<Result> NotifyChannel((SocketGuild socketGuild, SocketTextChannel socketTextChannel) endpointInformation, string message)
+        private async Task<Result> NotifyChannel((SocketGuild socketGuild, ITextChannel socketTextChannel) endpointInformation, string message)
         {
             try
             {
@@ -71,8 +71,9 @@ namespace VRNotifier.Services
            
         }
         
-        private IEnumerable<(SocketGuild socketGuild, SocketTextChannel socketTextChannel)> FilterNotifiableEndpointInformation(NotificationDTO notificationDto)
+        private async Task<IEnumerable<(SocketGuild socketGuild, ITextChannel socketTextChannel)>> FilterNotifiableEndpointInformation(NotificationDTO notificationDto)
         {
+            var notifiableEndpointInformation = new List<(SocketGuild, ITextChannel)>();
             foreach (var notificationEndpointIdentifier in notificationDto.NotificationEndpointIdentifiers)
             {
                 var guildResult = FetchGuild(notificationEndpointIdentifier);
@@ -82,14 +83,36 @@ namespace VRNotifier.Services
                     continue;
                 }
 
-                var channelResult = FetchChannel(guildResult.Value);
+                var categoryChannelResult =
+                    FetchSocketCategoryChannel(guildResult.Value, NOTIFICATION_CATEGORY_CHANNEL);
+                if (categoryChannelResult.IsFailure)
+                {
+                    _logger.LogWarning("Could not find category channel with name {name} trying to create it...", NOTIFICATION_CATEGORY_CHANNEL);
+                    var categoryCreationResult = await CreateCategoryChannel(guildResult.Value, NOTIFICATION_CATEGORY_CHANNEL);
+                    if (categoryCreationResult.IsFailure)
+                    {
+                        _logger.LogError("Could not create category channel with name {name}.", NOTIFICATION_CATEGORY_CHANNEL);
+                        continue;
+                    }
+                    categoryChannelResult = categoryCreationResult;
+                }
+
+                var channelResult = FetchChannel(guildResult.Value, notificationDto.MediaName);
                 if (channelResult.IsFailure)
                 {
-                    _logger.LogError("Could not notify guild with name {guildName} and identifier {identifier} due to {error}", guildResult.Value.Name, notificationEndpointIdentifier, channelResult.Error);
-                    continue;
+                    _logger.LogWarning("Could not find channel with name {mediaName} trying to create it...", notificationDto.MediaName.ToLower());
+                    var channelCreationResult = await CreateNotificationChannel(guildResult.Value, categoryChannelResult.Value, notificationDto.MediaName.ToLower());
+                    if (channelCreationResult.IsFailure)
+                    {
+                        _logger.LogError("Could not create notification channel with name {mediaName}.", notificationDto.MediaName.ToLower());
+                        continue;
+                    }
+                    channelResult = channelCreationResult;
                 }
-                yield return (guildResult.Value, channelResult.Value);
+                notifiableEndpointInformation.Add((guildResult.Value, channelResult.Value));
             }
+
+            return notifiableEndpointInformation;
         }
 
         private Result<SocketGuild> FetchGuild(string notificationEndpointIdentifier)
@@ -101,13 +124,54 @@ namespace VRNotifier.Services
                 : Result.Success(guild);
         }
 
-        private Result<SocketTextChannel> FetchChannel(SocketGuild socketGuild)
+        private Result<ITextChannel> FetchChannel(SocketGuild socketGuild, string channelName)
         {
-            var channel = socketGuild.TextChannels.FirstOrDefault(c => c.Name.ToLower().Equals(NOTIFICATION_CHANNEL_NAME));
+            var channel = socketGuild.TextChannels.FirstOrDefault(c => c.Name.ToLower().Equals(channelName));
             return channel == null
-                ? Result.Failure<SocketTextChannel>($"No notification channel with name {NOTIFICATION_CHANNEL_NAME} found.")
-                : Result.Success(channel);
+                ? Result.Failure<ITextChannel>($"No notification channel with name {channelName} found.")
+                : Result.Success<ITextChannel>(channel);
         }
         
+        private async Task<Result<ITextChannel>> CreateNotificationChannel(SocketGuild socketGuild, ICategoryChannel categoryChannel, string channelName)
+        {
+            try
+            {
+                var textChannel = await socketGuild.CreateTextChannelAsync(channelName,
+                    textChannelProperties => { textChannelProperties.CategoryId = categoryChannel.Id; }
+                );
+                return Result.Success<ITextChannel>(textChannel);
+            }
+            catch (Exception)
+            {
+                _logger.LogError("Failed to create notification channel with name {channelName}.", channelName);
+                return Result.Failure<ITextChannel>(
+                    $"Failed to create notification channel with name {channelName}");
+            }
+        }
+        
+        private Result<ICategoryChannel> FetchSocketCategoryChannel(SocketGuild socketGuild, string categoryName)
+        {
+            var categoryChannel = socketGuild.CategoryChannels.FirstOrDefault(c =>
+                c.Name.ToLower().Equals(categoryName.ToLower()));
+            return categoryChannel == null
+                ? Result.Failure<ICategoryChannel>(
+                    $"No category channel with name {categoryName} found.")
+                : Result.Success<ICategoryChannel>(categoryChannel);
+        }
+        
+        private async Task<Result<ICategoryChannel>> CreateCategoryChannel(SocketGuild socketGuild,
+            string categoryName)
+        {
+            try
+            {
+                var socketCategoryChannel = await socketGuild.CreateCategoryChannelAsync(categoryName);
+                return Result.Success<ICategoryChannel>(socketCategoryChannel);
+            }
+            catch (Exception)
+            {
+                _logger.LogError("Could not create category channel with name {categoryName}.", categoryName);
+                return Result.Failure<ICategoryChannel>($"Could not create category channel with name {categoryName}.");
+            }
+        }
     }
 }
